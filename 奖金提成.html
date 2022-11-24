@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+	<body>
+		<input type="number" name="px" id="a"/>
+		<button onclick="myfunction()">计算奖金</button>
+		<script>
+			function myfunction(){
+			var x=document.getElementById("a").value;
+			var sum;
+			if(x<100000)
+			{
+			sum=x*0.1;
+			document.write("发放奖金总数为："+sum);
+			}
+			else if(x>=100000&&x<200000)
+			{
+			sum=(x-100000)*0.075+10000;
+			document.write("发放奖金总数为："+sum);
+			}
+			else if(x>=200000&&x<400000)
+			{
+			sum=(x-200000)*0.05+17500;
+			document.write("发放奖金总数为："+sum);
+			}
+			else if(x>=400000&&x<600000)
+			{
+			sum=(x-400000)*0.03+27500;
+			document.write("发放奖金总数为："+sum);
+			}
+			else if(x>=600000&&x<1000000)
+			{
+			sum=(x-600000)*0.015+33500;
+			document.write("发放奖金总数为："+sum);
+			}
+			else if(x>=1000000)
+			{
+			sum=(x-1000000)*0.01+39500;
+			document.write("发放奖金总数为："+sum);
+			}		
+			}
+		</script>
+	</body>
+</html>
