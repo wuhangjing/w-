@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<style>
+			p{
+				color:black;
+			}
+		</style>
+	</head>
+	<body>
+		<input type="text" id="tx" value="abc">
+		<button onclick="ctrlc()">复制</button>
+		<input type="text" id="txf"><br>
+		<p id="xs"></p>
+		<script>
+			function ctrlc(){
+				var content = document.getElementById("tx").value;
+				document.getElementById("txf").value=content;
+				document.getElementById("xs").innerHTML="复制成功";
+			}
+		</script>
+	</body>
+</html>
