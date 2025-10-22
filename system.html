@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>技能大师</title>
+    
+    <!-- PWA相关元数据 -->
+    <meta name="theme-color" content="#3B82F6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="技能大师">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="管理你的技能，追踪成长历程">
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- 样式 -->
+    <style>
+        :root {
+            --primary: #3B82F6;
+            --secondary: #10B981;
+            --dark: #1F2937;
+            --light: #F3F4F6;
+            --accent: #8B5CF6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1F2937, #111827);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding-bottom: 80px;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 16px;
+        }
+        
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-top: 16px;
+        }
+        
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(to right, #60A5FA, #A78BFA);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .app-subtitle {
+            color: #9CA3AF;
+            font-size: 16px;
+        }
+        
+        /* 卡片样式 */
+        .card {
+            background: rgba(31, 41, 55, 0.7);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        /* 宿主信息 */
+        .host-profile {
+            text-align: center;
+        }
+        
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+        
+        .avatar i {
+            font-size: 40px;
+            color: white;
+        }
+        
+        .host-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .host-status {
+            color: #9CA3AF;
+            margin-bottom: 16px;
+        }
+        
+        /* 输入和按钮 */
+        .input-group {
+            margin-bottom: 16px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #D1D5DB;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(55, 65, 81, 0.7);
+            border: 1px solid rgba(75, 85, 99, 0.7);
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3B82F6;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary {
+            background: #3B82F6;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #10B981;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #EF4444;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6B7280;
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+        
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-full {
+            width: 100%;
+        }
+        
+        /* 技能列表 */
+        .skills-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .skill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(55, 65, 81, 0.5);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .skill-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .skill-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        
+        .status-mastered {
+            background: #10B981;
+        }
+        
+        .status-learning {
+            background: #F59E0B;
+        }
+        
+        .skill-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .skill-level {
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+        
+        .skill-progress {
+            width: 80px;
+            height: 4px;
+            background: #4B5563;
+            border-radius: 2px;
+            margin: 0 12px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: #3B82F6;
+            border-radius: 2px;
+        }
+        
+        .skill-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .stat-card {
+            background: rgba(55, 65, 81, 0.5);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .stat-mastered {
+            color: #10B981;
+        }
+        
+        .stat-learning {
+            color: #F59E0B;
+        }
+        
+        .stat-growth {
+            color: #8B5CF6;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(31, 41, 55, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+        
+        .nav-item.active {
+            color: #3B82F6;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal {
+            background: #1F2937;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            width: 100%;
+            max-width: 500px;
+            padding: 24px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #9CA3AF;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9CA3AF;
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        /* 学习进度 */
+        .learning-progress {
+            margin-top: 16px;
+            display: none;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #9CA3AF;
+        }
+        
+        .progress-bar-container {
+            height: 6px;
+            background: #4B5563;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-bar-fill {
+            height: 100%;
+            background: #10B981;
+            border-radius: 3px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        /* 筛选和排序 */
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        /* 成就 */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .achievement-card {
+            background: rgba(55, 65, 81, 0.5);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .achievement-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 8px;
+        }
+        
+        .achievement-name {
+            font-size: 12px;
+        }
+        
+        /* 安装提示 */
+        .install-prompt {
+            position: fixed;
+            bottom: 80px;
+            left: 16px;
+            right: 16px;
+            background: #1F2937;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            z-index: 200;
+            display: none;
+        }
+        
+        .install-content {
+            display: flex;
+            align-items: center;
+        }
+        
+        .install-icon {
+            width: 40px;
+            height: 40px;
+            background: #3B82F6;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+        
+        .install-text {
+            flex: 1;
+        }
+        
+        .install-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .install-description {
+            font-size: 14px;
+            color: #9CA3AF;
+        }
+        
+        .install-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        /* 响应式调整 */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <h1 class="app-title">技能大师</h1>
+            <p class="app-subtitle">管理你的技能，追踪成长历程</p>
+        </header>
+        
+        <!-- 宿主信息卡片 -->
+        <section class="card host-profile">
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
+            <h2 class="host-name" id="hostName">未设置宿主</h2>
+            <p class="host-status" id="hostStatus">待激活</p>
+            
+            <!-- 成就展示 -->
+            <div class="achievements-grid" id="achievementsList">
+                <div class="achievement-card">
+                    <div class="achievement-icon" style="background: #F59E0B;">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="achievement-name">初出茅庐</div>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="nameInput">宿主姓名</label>
+                <input type="text" id="nameInput" placeholder="输入宿主姓名">
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn btn-primary btn-full" id="saveNameBtn">保存姓名</button>
+                <button class="btn btn-success btn-icon" id="exportDataBtn">
+                    <i class="fas fa-download"></i>
+                </button>
+                <button class="btn btn-secondary btn-icon" id="importDataBtn">
+                    <i class="fas fa-upload"></i>
+                </button>
+            </div>
+        </section>
+        
+        <!-- 技能管理区域 -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">技能管理</h2>
+                <div>
+                    <span>技能:</span>
+                    <span id="skillCount">0</span>
+                </div>
+            </div>
+            
+            <!-- 筛选和排序 -->
+            <div class="filters">
+                <select id="statusFilter" class="btn btn-secondary btn-small">
+                    <option value="all">全部状态</option>
+                    <option value="mastered">已掌握</option>
+                    <option value="learning">学习中</option>
+                </select>
+                
+                <select id="sortBy" class="btn btn-secondary btn-small">
+                    <option value="name">按名称</option>
+                    <option value="level">按等级</option>
+                    <option value="recent">最近更新</option>
+                </select>
+            </div>
+            
+            <!-- 技能列表 -->
+            <div class="skills-list" id="skillsList">
+                <div class="empty-state" id="emptySkillsMsg">
+                    <div class="empty-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <p>暂无技能，点击下方按钮添加</p>
+                </div>
+            </div>
+            
+            <!-- 添加技能表单 -->
+            <div class="input-group">
+                <input type="text" id="skillNameInput" placeholder="输入技能名称">
+            </div>
+            <button class="btn btn-success btn-full" id="addSkillBtn">
+                <i class="fas fa-plus"></i> 添加技能
+            </button>
+        </section>
+        
+        <!-- 技能统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value stat-mastered" id="masteredSkills">0</div>
+                <div class="stat-label">已掌握</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-learning" id="learningSkills">0</div>
+                <div class="stat-label">学习中</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value stat-growth" id="skillGrowth">0%</div>
+                <div class="stat-label">增长率</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 底部导航 -->
+    <nav class="bottom-nav">
+        <div class="nav-item active">
+            <i class="fas fa-list nav-icon"></i>
+            <span>技能</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-chart-bar nav-icon"></i>
+            <span>统计</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-cog nav-icon"></i>
+            <span>设置</span>
+        </div>
+    </nav>
+    
+    <!-- 技能详情模态框 -->
+    <div class="modal-overlay" id="skillDetailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">技能详情</h3>
+                <button class="modal-close" id="closeModalBtn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label>技能名称</label>
+                <input type="text" id="modalSkillName">
+            </div>
+            
+            <div class="form-group">
+                <label>技能状态</label>
+                <select id="modalSkillStatus">
+                    <option value="mastered">已掌握</option>
+                    <option value="learning">学习中</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>技能等级</label>
+                <div style="display: flex; align-items: center;">
+                    <span style="margin-right: 8px;">LV.</span>
+                    <span id="modalSkillLevel" style="font-size: 24px; font-weight: bold; color: #3B82F6;">0</span>
+                    <span style="margin-left: 8px; color: #9CA3AF; font-size: 14px;">/ 100</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>当前熟练度</label>
+                <input type="range" id="modalSkillProficiency" min="0" max="20" value="0" style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #9CA3AF; margin-top: 8px;">
+                    <span>0</span>
+                    <span id="proficiencyValue">0/20</span>
+                    <span id="maxProficiencyValue">20</span>
+                </div>
+            </div>
+            
+            <div id="learningControls">
+                <button class="btn btn-success btn-full" id="startLearningBtn">
+                    <i class="fas fa-play"></i> 开始学习
+                </button>
+                
+                <div class="learning-progress" id="learningProgress">
+                    <div class="progress-info">
+                        <span>学习进度</span>
+                        <span id="learningTimeRemaining">00:00:00</span>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="learningProgressBar"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="btn-group" style="margin-top: 24px;">
+                <button class="btn btn-danger" id="deleteSkillBtn">删除</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" id="cancelSkillBtn">取消</button>
+                    <button class="btn btn-primary" id="saveSkillBtn">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 安装提示 -->
+    <div class="install-prompt" id="installPrompt">
+        <div class="install-content">
+            <div class="install-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="install-text">
+                <div class="install-title">添加到主屏幕</div>
+                <div class="install-description">安装应用以获得更好的体验</div>
+            </div>
+        </div>
+        <div class="install-actions">
+            <button class="btn btn-secondary btn-small" id="installCancel">取消</button>
+            <button class="btn btn-primary btn-small" id="installConfirm">安装</button>
+        </div>
+    </div>
+    
+    <!-- 应用清单 -->
+    <script>
+        // 创建动态manifest
+        const manifest = {
+            "name": "技能大师",
+            "short_name": "技能大师",
+            "description": "管理你的技能，追踪成长历程",
+            "start_url": "/",
+            "display": "standalone",
+            "background_color": "#1F2937",
+            "theme_color": "#3B82F6",
+            "orientation": "portrait",
+            "icons": [
+                {
+                    "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9IiMzQjgyRjYiLz4KPHBhdGggZD0iTTk2IDQ0QzY3LjIgNDQgNDQgNjcuMiA0NCA5NkM0NCAxMjQuOCA2Ny4yIDE0OCA5NiAxNDhDMTI0LjggMTQ4IDE0OCAxMjQuOCAxNDggOTZDMTQ4IDY3LjIgMTI0LjggNDQgOTYgNDRaTTExMiAxMDhMODggMTA4TDg4IDg0TDExMiA4NEwxMTIgMTA4WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+",
+                    "sizes": "192x192",
+                    "type": "image/svg+xml"
+                },
+                {
+                    "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9IiMzQjgyRjYiLz4KPHBhdGggZD0iTTI1NiAxMTZDMTc2IDExNiAxMTYgMTc2IDExNiAyNTZDMTE2IDMzNiAxNzYgMzk2IDI1NiAzOTZDMzM2IDM5NiAzOTYgMzM2IDM5NiAyNTZDMzk2IDE3NiAzMzYgMTE2IDI1NiAxMTZaTTMwNCAyODhMMjI0IDI4OEwyMjQgMjI0TDMwNCAyMjRMMzA0IDI4OFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==",
+                    "sizes": "512x512",
+                    "type": "image/svg+xml"
+                }
+            ]
+        };
+        
+        // 创建manifest链接
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestURL;
+        document.head.appendChild(link);
+    </script>
+    
+    <!-- 应用逻辑 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化数据
+            let hostData = JSON.parse(localStorage.getItem('hostData')) || {
+                name: '未设置宿主',
+                skills: [],
+                history: [],
+                achievements: []
+            };
+            
+            // 检查现有技能数据是否包含等级和学习状态信息，如果没有则添加默认值
+            hostData.skills = hostData.skills.map(skill => ({
+                level: skill.level || 0,
+                proficiency: skill.proficiency || 0,
+                isLearning: skill.isLearning || false,
+                lastLearnedTime: skill.lastLearnedTime || null,
+                status: skill.status || 'learning',
+                lastUpdated: skill.lastUpdated || new Date().toISOString(),
+                ...skill
+            }));
+            
+            // 学习计时器
+            let learningTimers = {};
+
+            // DOM元素
+            const hostNameElement = document.getElementById('hostName');
+            const hostStatusElement = document.getElementById('hostStatus');
+            const nameInput = document.getElementById('nameInput');
+            const saveNameBtn = document.getElementById('saveNameBtn');
+            const exportDataBtn = document.getElementById('exportDataBtn');
+            const importDataBtn = document.getElementById('importDataBtn');
+            const skillCountElement = document.getElementById('skillCount');
+            const skillsList = document.getElementById('skillsList');
+            const emptySkillsMsg = document.getElementById('emptySkillsMsg');
+            const skillNameInput = document.getElementById('skillNameInput');
+            const addSkillBtn = document.getElementById('addSkillBtn');
+            const masteredSkillsElement = document.getElementById('masteredSkills');
+            const learningSkillsElement = document.getElementById('learningSkills');
+            const skillGrowthElement = document.getElementById('skillGrowth');
+            const achievementsList = document.getElementById('achievementsList');
+            
+            // 筛选和排序元素
+            const statusFilter = document.getElementById('statusFilter');
+            const sortBy = document.getElementById('sortBy');
+            
+            // 模态框元素
+            const skillDetailModal = document.getElementById('skillDetailModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const modalSkillName = document.getElementById('modalSkillName');
+            const modalSkillStatus = document.getElementById('modalSkillStatus');
+            const modalSkillLevel = document.getElementById('modalSkillLevel');
+            const modalSkillProficiency = document.getElementById('modalSkillProficiency');
+            const proficiencyValue = document.getElementById('proficiencyValue');
+            const maxProficiencyValue = document.getElementById('maxProficiencyValue');
+            const deleteSkillBtn = document.getElementById('deleteSkillBtn');
+            const saveSkillBtn = document.getElementById('saveSkillBtn');
+            const cancelSkillBtn = document.getElementById('cancelSkillBtn');
+            const startLearningBtn = document.getElementById('startLearningBtn');
+            const learningProgress = document.getElementById('learningProgress');
+            const learningProgressBar = document.getElementById('learningProgressBar');
+            const learningTimeRemaining = document.getElementById('learningTimeRemaining');
+            
+            // 安装提示
+            const installPrompt = document.getElementById('installPrompt');
+            const installCancel = document.getElementById('installCancel');
+            const installConfirm = document.getElementById('installConfirm');
+            
+            // 当前编辑的技能索引
+            let currentEditingIndex = -1;
+            
+            // 检查是否有其他技能正在学习中
+            function getLearningSkillIndex() {
+                return hostData.skills.findIndex(skill => skill.isLearning);
+            }
+
+            // 更新宿主信息显示
+            function updateHostInfo() {
+                hostNameElement.textContent = hostData.name;
+                hostStatusElement.textContent = hostData.skills.length > 0 ? '已激活' : '待激活';
+                hostStatusElement.className = hostData.skills.length > 0 ? 'host-status' : 'host-status';
+                nameInput.value = hostData.name !== '未设置宿主' ? hostData.name : '';
+            }
+
+            // 更新技能计数
+            function updateSkillCount() {
+                skillCountElement.textContent = hostData.skills.length;
+                
+                // 更新统计信息
+                const masteredCount = hostData.skills.filter(skill => skill.status === 'mastered').length;
+                const learningCount = hostData.skills.filter(skill => skill.status === 'learning').length;
+                
+                masteredSkillsElement.textContent = masteredCount;
+                learningSkillsElement.textContent = learningCount;
+                
+                // 计算技能增长率
+                const growthRate = hostData.skills.length > 0 ? 
+                    Math.round((masteredCount / hostData.skills.length) * 100) : 0;
+                skillGrowthElement.textContent = `${growthRate}%`;
+            }
+
+            // 计算每个等级的熟练度上限（依次递增）
+            function getMaxProficiency(level) {
+                return 20 + (level * 2);
+            }
+
+            // 渲染技能列表
+            function renderSkillsList() {
+                // 获取筛选和排序条件
+                const statusFilterValue = statusFilter.value;
+                const sortByValue = sortBy.value;
+                
+                // 筛选技能
+                let filteredSkills = hostData.skills.filter(skill => {
+                    const statusMatch = statusFilterValue === 'all' || skill.status === statusFilterValue;
+                    return statusMatch;
+                });
+                
+                // 排序技能
+                filteredSkills.sort((a, b) => {
+                    switch(sortByValue) {
+                        case 'name':
+                            return a.name.localeCompare(b.name);
+                        case 'level':
+                            return b.level - a.level || b.proficiency - a.proficiency;
+                        case 'recent':
+                            return new Date(b.lastUpdated) - new Date(a.lastUpdated);
+                        default:
+                            return 0;
+                    }
+                });
+                
+                // 清空列表
+                skillsList.innerHTML = '';
+                
+                if (filteredSkills.length === 0) {
+                    skillsList.appendChild(emptySkillsMsg);
+                    return;
+                }
+                
+                // 隐藏空消息
+                emptySkillsMsg.remove();
+                
+                // 检查是否有技能正在学习中
+                const learningIndex = getLearningSkillIndex();
+                
+                // 添加技能项
+                filteredSkills.forEach((skill, index) => {
+                    const originalIndex = hostData.skills.indexOf(skill);
+                    const skillItem = document.createElement('div');
+                    skillItem.className = 'skill-item';
+                    
+                    // 根据技能状态设置不同的颜色
+                    const statusClass = skill.status === 'mastered' ? 'status-mastered' : 'status-learning';
+                    
+                    // 计算当前级别的熟练度上限和百分比
+                    const maxProficiency = getMaxProficiency(skill.level);
+                    const proficiencyPercent = (skill.proficiency / maxProficiency) * 100;
+                    
+                    skillItem.innerHTML = `
+                        <div class="skill-info">
+                            <div class="skill-status ${statusClass}"></div>
+                            <div>
+                                <div class="skill-name">${skill.name}</div>
+                                <div class="skill-level">LV.${skill.level || 0}</div>
+                            </div>
+                        </div>
+                        <div class="skill-progress">
+                            <div class="progress-bar" style="width: ${proficiencyPercent}%"></div>
+                        </div>
+                        <div class="skill-actions">
+                            ${skill.isLearning ? 
+                                `<button class="btn btn-danger btn-small stop-learning-btn" data-index="${originalIndex}">
+                                    <i class="fas fa-stop"></i>
+                                </button>` : 
+                                (skill.level < 100 && (learningIndex === -1 || learningIndex === originalIndex) ? 
+                                `<button class="btn btn-success btn-small start-learning-btn" data-index="${originalIndex}">
+                                    <i class="fas fa-play"></i>
+                                </button>` : 
+                                `<button class="btn btn-secondary btn-small" disabled>
+                                    <i class="fas fa-play"></i>
+                                </button>`)
+                            }
+                        </div>
+                    `;
+                    
+                    // 点击技能项打开详情模态框
+                    skillItem.addEventListener('click', (e) => {
+                        // 如果点击的是开始/停止学习按钮，则不打开详情模态框
+                        if (!e.target.closest('.start-learning-btn') && !e.target.closest('.stop-learning-btn')) {
+                            openSkillDetail(originalIndex);
+                        }
+                    });
+                    
+                    skillsList.appendChild(skillItem);
+                });
+                
+                // 添加开始学习按钮事件
+                document.querySelectorAll('.start-learning-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const index = parseInt(btn.dataset.index);
+                        startLearning(index);
+                    });
+                });
+                
+                // 添加停止学习按钮事件
+                document.querySelectorAll('.stop-learning-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const index = parseInt(btn.dataset.index);
+                        stopLearning(index);
+                    });
+                });
+            }
+
+            // 打开技能详情模态框
+            function openSkillDetail(index) {
+                currentEditingIndex = index;
+                
+                // 停止之前可能正在进行的学习计时
+                if (currentEditingIndex !== -1 && learningTimers[currentEditingIndex]) {
+                    clearInterval(learningTimers[currentEditingIndex]);
+                    learningTimers[currentEditingIndex] = null;
+                }
+                
+                if (index === -1) {
+                    // 添加新技能
+                    modalSkillName.value = '';
+                    modalSkillStatus.value = 'learning';
+                    modalSkillLevel.textContent = '0';
+                    modalSkillProficiency.value = 0;
+                    const maxProficiency = getMaxProficiency(0);
+                    proficiencyValue.textContent = `0/${maxProficiency}`;
+                    maxProficiencyValue.textContent = maxProficiency;
+                    modalSkillProficiency.max = maxProficiency;
+                    deleteSkillBtn.style.display = 'none';
+                    
+                    // 重置学习控制
+                    startLearningBtn.innerHTML = '<i class="fas fa-play"></i> 开始学习';
+                    startLearningBtn.className = 'btn btn-success btn-full';
+                    startLearningBtn.disabled = false;
+                    learningProgress.style.display = 'none';
+                    learningProgressBar.style.width = '0%';
+                    learningTimeRemaining.textContent = '00:00:00';
+                } else {
+                    // 编辑现有技能
+                    const skill = hostData.skills[index];
+                    modalSkillName.value = skill.name;
+                    modalSkillStatus.value = skill.status;
+                    modalSkillLevel.textContent = skill.level;
+                    
+                    // 计算当前级别的熟练度上限
+                    const maxProficiency = getMaxProficiency(skill.level);
+                    modalSkillProficiency.max = maxProficiency;
+                    modalSkillProficiency.value = skill.proficiency;
+                    proficiencyValue.textContent = `${skill.proficiency}/${maxProficiency}`;
+                    maxProficiencyValue.textContent = maxProficiency;
+                    deleteSkillBtn.style.display = 'block';
+                    
+                    // 如果技能已达到最高等级（100级），则禁用熟练度滑块
+                    modalSkillProficiency.disabled = skill.level >= 100;
+                    
+                    // 设置学习控制
+                    if (skill.isLearning) {
+                        startLearningBtn.innerHTML = '<i class="fas fa-stop"></i> 停止学习';
+                        startLearningBtn.className = 'btn btn-danger btn-full';
+                        startLearningBtn.disabled = false;
+                        learningProgress.style.display = 'block';
+                        
+                        // 计算剩余时间
+                        if (skill.lastLearnedTime) {
+                            const now = new Date();
+                            const lastLearned = new Date(skill.lastLearnedTime);
+                            const elapsedTime = Math.floor((now - lastLearned) / 1000);
+                            const remainingTime = 1800 - (elapsedTime % 1800);
+                            
+                            // 更新进度条
+                            updateLearningProgress(remainingTime);
+                            
+                            // 启动计时器
+                            if (!learningTimers[index]) {
+                                learningTimers[index] = setInterval(() => {
+                                    const currentRemainingTime = 1800 - (Math.floor((new Date() - lastLearned) / 1000) % 1800);
+                                    updateLearningProgress(currentRemainingTime);
+                                    
+                                    // 如果剩余时间为0，增加熟练度
+                                    if (currentRemainingTime <= 0) {
+                                        increaseProficiency(index);
+                                        clearInterval(learningTimers[index]);
+                                        learningTimers[index] = null;
+                                        
+                                        // 更新按钮状态
+                                        startLearningBtn.innerHTML = '<i class="fas fa-play"></i> 开始学习';
+                                        startLearningBtn.className = 'btn btn-success btn-full';
+                                        learningProgress.style.display = 'none';
+                                    }
+                                }, 1000);
+                            }
+                        }
+                    } else {
+                        startLearningBtn.innerHTML = '<i class="fas fa-play"></i> 开始学习';
+                        startLearningBtn.className = 'btn btn-success btn-full';
+                        
+                        // 如果技能已达到最高等级（100级）或已掌握，则禁用开始学习按钮
+                        startLearningBtn.disabled = skill.level >= 100 || skill.status === 'mastered';
+                        
+                        learningProgress.style.display = 'none';
+                    }
+                }
+                
+                // 显示模态框
+                skillDetailModal.classList.add('active');
+                
+                // 更新学习进度条
+                function updateLearningProgress(seconds) {
+                    const hours = Math.floor(seconds / 3600);
+                    const minutes = Math.floor((seconds % 3600) / 60);
+                    const secs = seconds % 60;
+                    
+                    learningTimeRemaining.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                    learningProgressBar.style.width = `${(1 - seconds / 1800) * 100}%`;
+                }
+            }
+
+            // 增加熟练度
+            function increaseProficiency(index) {
+                if (index === -1 || index >= hostData.skills.length) return;
+                
+                const skill = hostData.skills[index];
+                
+                // 如果技能已达到最高等级（100级），则不增加熟练度
+                if (skill.level >= 100) {
+                    return;
+                }
+                
+                // 计算当前级别的熟练度上限
+                const maxProficiency = getMaxProficiency(skill.level);
+                
+                // 增加熟练度
+                skill.proficiency += 1;
+                skill.lastLearnedTime = new Date().toISOString();
+                skill.lastUpdated = new Date().toISOString();
+                
+                // 检查是否升级
+                if (skill.proficiency >= maxProficiency && skill.level < 100) {
+                    skill.level += 1;
+                    skill.proficiency = 0;
+                    
+                    // 如果达到10级，自动设置为已掌握
+                    if (skill.level >= 10) {
+                        skill.status = 'mastered';
+                        skill.isLearning = false;
+                    }
+                }
+                
+                // 保存数据并更新UI
+                saveData();
+                
+                // 如果模态框打开且正在编辑当前技能，更新UI
+                if (currentEditingIndex === index && skillDetailModal.classList.contains('active')) {
+                    modalSkillLevel.textContent = skill.level;
+                    
+                    // 更新当前级别的熟练度上限
+                    const newMaxProficiency = getMaxProficiency(skill.level);
+                    modalSkillProficiency.max = newMaxProficiency;
+                    modalSkillProficiency.value = skill.proficiency;
+                    proficiencyValue.textContent = `${skill.proficiency}/${newMaxProficiency}`;
+                    maxProficiencyValue.textContent = newMaxProficiency;
+                    
+                    // 如果技能已达到最高等级（100级），禁用熟练度滑块和开始学习按钮
+                    modalSkillProficiency.disabled = skill.level >= 100;
+                    if (skill.level >= 100) {
+                        startLearningBtn.disabled = true;
+                    }
+                    
+                    modalSkillStatus.value = skill.status;
+                }
+            }
+
+            // 关闭模态框
+            function closeModal() {
+                skillDetailModal.classList.remove('active');
+                
+                // 恢复学习计时器
+                if (currentEditingIndex !== -1) {
+                    const skill = hostData.skills[currentEditingIndex];
+                    if (skill.isLearning && skill.lastLearnedTime && skill.level < 100) {
+                        const lastLearned = new Date(skill.lastLearnedTime);
+                        
+                        learningTimers[currentEditingIndex] = setInterval(() => {
+                            const now = new Date();
+                            const elapsedTime = Math.floor((now - lastLearned) / 1000);
+                            if (elapsedTime >= 1800) {
+                                increaseProficiency(currentEditingIndex);
+                                lastLearned.setTime(lastLearned.getTime() + 1800000);
+                                
+                                // 如果技能已达到最高等级（100级），自动停止学习
+                                if (skill.level >= 100) {
+                                    stopLearning(currentEditingIndex);
+                                }
+                            }
+                        }, 60000);
+                    }
+                }
+                
+                currentEditingIndex = -1;
+            }
+
+            // 保存技能
+            function saveSkill() {
+                const name = modalSkillName.value.trim();
+                if (!name) {
+                    alert('请输入技能名称');
+                    return;
+                }
+                
+                if (currentEditingIndex === -1) {
+                    // 添加新技能
+                    hostData.skills.push({
+                        name,
+                        status: 'learning',
+                        level: 0,
+                        proficiency: 0,
+                        isLearning: false,
+                        lastLearnedTime: null,
+                        lastUpdated: new Date().toISOString()
+                    });
+                } else {
+                    // 更新现有技能
+                    const currentSkill = hostData.skills[currentEditingIndex];
+                    
+                    // 如果技能已经是"已掌握"状态，则不允许修改状态和等级
+                    const newStatus = modalSkillStatus.value;
+                    const newLevel = parseInt(modalSkillLevel.textContent);
+                    
+                    // 如果从已掌握状态改为其他状态，需要确认
+                    if (currentSkill.status === 'mastered' && newStatus !== 'mastered') {
+                        if (!confirm('确定要将已掌握的技能改为其他状态吗？这将清除学习进度。')) {
+                            return;
+                        }
+                    }
+                    
+                    hostData.skills[currentEditingIndex] = {
+                        ...hostData.skills[currentEditingIndex],
+                        name,
+                        status: newStatus,
+                        level: newLevel,
+                        // 如果从已掌握状态改为其他状态，重置熟练度
+                        proficiency: currentSkill.status === 'mastered' && newStatus !== 'mastered' ? 0 : currentSkill.proficiency,
+                        // 如果状态改变，停止学习
+                        isLearning: newStatus !== 'learning' ? false : currentSkill.isLearning,
+                        lastUpdated: new Date().toISOString()
+                    };
+                }
+                
+                // 保存数据并更新UI
+                saveData();
+                closeModal();
+            }
+
+            // 删除技能
+            function deleteSkill() {
+                if (currentEditingIndex === -1) return;
+                
+                if (confirm('确定要删除这个技能吗？')) {
+                    // 停止学习计时器
+                    if (learningTimers[currentEditingIndex]) {
+                        clearInterval(learningTimers[currentEditingIndex]);
+                        learningTimers[currentEditingIndex] = null;
+                    }
+                    
+                    hostData.skills.splice(currentEditingIndex, 1);
+                    saveData();
+                    closeModal();
+                }
+            }
+
+            // 开始学习
+            function startLearning(index) {
+                if (index >= hostData.skills.length) return;
+                
+                const skill = hostData.skills[index];
+                
+                // 如果技能已达到最高等级（100级），则不能再学习
+                if (skill.level >= 100) {
+                    alert('此技能已达到最高等级（100级），无法继续提升');
+                    return;
+                }
+                
+                // 检查是否已有其他技能正在学习中
+                const learningIndex = getLearningSkillIndex();
+                if (learningIndex !== -1 && learningIndex !== index) {
+                    const learningSkill = hostData.skills[learningIndex];
+                    alert(`您正在学习"${learningSkill.name}"，无法同时学习多个技能。请先停止当前学习或完成当前学习。`);
+                    return;
+                }
+                
+                // 设置学习状态
+                skill.isLearning = true;
+                skill.lastLearnedTime = new Date().toISOString();
+                skill.lastUpdated = new Date().toISOString();
+                
+                // 保存数据并更新UI
+                saveData();
+                
+                // 如果模态框打开且正在编辑当前技能，更新UI
+                if (currentEditingIndex === index && skillDetailModal.classList.contains('active')) {
+                    startLearningBtn.innerHTML = '<i class="fas fa-stop"></i> 停止学习';
+                    startLearningBtn.className = 'btn btn-danger btn-full';
+                    learningProgress.style.display = 'block';
+                }
+                
+                // 设置定时器，每分钟检查一次学习时间
+                learningTimers[index] = setInterval(() => {
+                    const now = new Date();
+                    const lastLearned = new Date(skill.lastLearnedTime);
+                    const elapsedTime = Math.floor((now - lastLearned) / 1000);
+                    
+                    // 如果学习时间满半小时，增加熟练度
+                    if (elapsedTime >= 1800) {
+                        increaseProficiency(index);
+                        skill.lastLearnedTime = new Date().toISOString();
+                        
+                        // 如果技能已达到最高等级（100级），自动停止学习
+                        if (skill.level >= 100) {
+                            stopLearning(index);
+                        }
+                    }
+                }, 60000);
+            }
+
+            // 停止学习
+            function stopLearning(index) {
+                if (index >= hostData.skills.length) return;
+                
+                // 清除定时器
+                if (learningTimers[index]) {
+                    clearInterval(learningTimers[index]);
+                    learningTimers[index] = null;
+                }
+                
+                // 更新技能状态
+                const skill = hostData.skills[index];
+                skill.isLearning = false;
+                skill.lastUpdated = new Date().toISOString();
+                
+                // 保存数据并更新UI
+                saveData();
+                
+                // 如果模态框打开且正在编辑当前技能，更新UI
+                if (currentEditingIndex === index && skillDetailModal.classList.contains('active')) {
+                    startLearningBtn.innerHTML = '<i class="fas fa-play"></i> 开始学习';
+                    startLearningBtn.className = 'btn btn-success btn-full';
+                    learningProgress.style.display = 'none';
+                }
+            }
+
+            // 导出数据
+            function exportData() {
+                const dataStr = JSON.stringify(hostData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `技能数据_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+
+            // 导入数据
+            function importData() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                
+                input.onchange = e => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = event => {
+                        try {
+                            const importedData = JSON.parse(event.target.result);
+                            
+                            // 验证数据格式
+                            if (importedData.skills && Array.isArray(importedData.skills)) {
+                                if (confirm('确定要导入数据吗？这将覆盖当前所有数据。')) {
+                                    hostData = importedData;
+                                    saveData();
+                                    alert('数据导入成功！');
+                                }
+                            } else {
+                                alert('文件格式不正确，无法导入数据。');
+                            }
+                        } catch (error) {
+                            alert('文件读取失败，请检查文件格式。');
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                };
+                
+                input.click();
+            }
+
+            // 保存数据到本地存储
+            function saveData() {
+                localStorage.setItem('hostData', JSON.stringify(hostData));
+                updateHostInfo();
+                updateSkillCount();
+                renderSkillsList();
+            }
+
+            // 显示安装提示
+            function showInstallPrompt() {
+                installPrompt.style.display = 'block';
+            }
+
+            // 隐藏安装提示
+            function hideInstallPrompt() {
+                installPrompt.style.display = 'none';
+            }
+
+            // 事件监听
+            saveNameBtn.addEventListener('click', function() {
+                const name = nameInput.value.trim();
+                if (name) {
+                    hostData.name = name;
+                    saveData();
+                }
+            });
+
+            exportDataBtn.addEventListener('click', exportData);
+            importDataBtn.addEventListener('click', importData);
+
+            addSkillBtn.addEventListener('click', function() {
+                const name = skillNameInput.value.trim();
+                if (name) {
+                    hostData.skills.push({
+                        name,
+                        status: 'learning',
+                        level: 0,
+                        proficiency: 0,
+                        isLearning: false,
+                        lastLearnedTime: null,
+                        lastUpdated: new Date().toISOString()
+                    });
+                    skillNameInput.value = '';
+                    saveData();
+                } else {
+                    openSkillDetail(-1);
+                }
+            });
+
+            // 筛选和排序事件
+            statusFilter.addEventListener('change', renderSkillsList);
+            sortBy.addEventListener('change', renderSkillsList);
+
+            // 模态框事件
+            closeModalBtn.addEventListener('click', closeModal);
+            saveSkillBtn.addEventListener('click', saveSkill);
+            deleteSkillBtn.addEventListener('click', deleteSkill);
+            cancelSkillBtn.addEventListener('click', closeModal);
+            
+            // 开始/停止学习按钮事件
+            startLearningBtn.addEventListener('click', function() {
+                if (currentEditingIndex === -1) {
+                    alert('请先保存技能');
+                    return;
+                }
+                
+                const skill = hostData.skills[currentEditingIndex];
+                
+                if (skill.isLearning) {
+                    stopLearning(currentEditingIndex);
+                } else {
+                    // 检查是否已有其他技能正在学习中
+                    const learningIndex = getLearningSkillIndex();
+                    if (learningIndex !== -1) {
+                        const learningSkill = hostData.skills[learningIndex];
+                        if (confirm(`您正在学习"${learningSkill.name}"，确定要停止当前学习并开始学习"${skill.name}"吗？`)) {
+                            // 先停止其他技能的学习
+                            stopLearning(learningIndex);
+                            // 再开始当前技能的学习
+                            startLearning(currentEditingIndex);
+                        }
+                    } else {
+                        startLearning(currentEditingIndex);
+                    }
+                }
+            });
+            
+            // 熟练度滑块事件
+            modalSkillProficiency.addEventListener('input', function() {
+                // 如果技能已达到最高等级，恢复原值
+                if (currentEditingIndex !== -1) {
+                    const skill = hostData.skills[currentEditingIndex];
+                    if (skill.level >= 100) {
+                        this.value = skill.proficiency;
+                    }
+                }
+                
+                const level = parseInt(modalSkillLevel.textContent);
+                const maxProficiency = getMaxProficiency(level);
+                proficiencyValue.textContent = `${this.value}/${maxProficiency}`;
+            });
+
+            // 安装提示事件
+            installCancel.addEventListener('click', hideInstallPrompt);
+            installConfirm.addEventListener('click', function() {
+                hideInstallPrompt();
+                alert('应用已添加到主屏幕！');
+            });
+
+            // 点击模态框外部关闭
+            skillDetailModal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal();
+                }
+            });
+
+            // 初始化UI
+            updateHostInfo();
+            updateSkillCount();
+            renderSkillsList();
+
+            // 检查是否有正在学习的技能，并恢复计时器
+            hostData.skills.forEach((skill, index) => {
+                if (skill.isLearning && skill.lastLearnedTime) {
+                    const now = new Date();
+                    const lastLearned = new Date(skill.lastLearnedTime);
+                    const elapsedHalfHours = (now - lastLearned) / 1800000;
+                    
+                    // 如果距离上次学习已经超过半小时，增加相应的熟练度
+                    if (elapsedHalfHours >= 1) {
+                        const halfHoursToAdd = Math.floor(elapsedHalfHours);
+                        
+                        // 更新最后学习时间
+                        skill.lastLearnedTime = new Date(lastLearned.getTime() + halfHoursToAdd * 1800000).toISOString();
+                        
+                        // 增加熟练度
+                        for (let i = 0; i < halfHoursToAdd; i++) {
+                            // 如果技能已达到最高等级（100级），则停止增加熟练度
+                            if (skill.level >= 100) {
+                                skill.isLearning = false;
+                                break;
+                            }
+                            
+                            const maxProficiency = getMaxProficiency(skill.level);
+                            skill.proficiency += 1;
+                            
+                            // 检查是否升级
+                            if (skill.proficiency >= maxProficiency && skill.level < 100) {
+                                skill.level += 1;
+                                skill.proficiency = 0;
+                                
+                                // 如果达到10级，自动设置为已掌握
+                                if (skill.level >= 10) {
+                                    skill.status = 'mastered';
+                                    skill.isLearning = false;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // 保存数据
+                        saveData();
+                    }
+                    
+                    // 如果技能仍在学习中，启动计时器
+                    if (skill.isLearning && skill.level < 100) {
+                        if (learningTimers[index]) {
+                            clearInterval(learningTimers[index]);
+                        }
+                        
+                        // 设置定时器，每分钟检查一次学习时间
+                        learningTimers[index] = setInterval(() => {
+                            const now = new Date();
+                            const lastLearned = new Date(skill.lastLearnedTime);
+                            const elapsedTime = Math.floor((now - lastLearned) / 1000);
+                            
+                            // 如果学习时间满半小时，增加熟练度
+                            if (elapsedTime >= 1800) {
+                                increaseProficiency(index);
+                                skill.lastLearnedTime = new Date().toISOString();
+                                
+                                // 如果技能已达到最高等级（100级），自动停止学习
+                                if (skill.level >= 100) {
+                                    stopLearning(index);
+                                }
+                            }
+                        }, 60000);
+                    }
+                }
+            });
+
+            // 添加键盘事件
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && skillDetailModal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+            
+            // 显示安装提示（模拟PWA安装提示）
+            setTimeout(showInstallPrompt, 3000);
+        });
+    </script>
+</body>
+</html>
